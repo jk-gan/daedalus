@@ -1,0 +1,20 @@
+[package]
+name = "daedalus"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+bindgen = "0.60.1"
+
+[dependencies]
+# render
+cocoa = "0.24.0"
+core-foundation = "0.9.3"
+core-graphics-types = "0.1.1"
+metal = "0.24.0"
+objc = { package = "objc2", version = "0.2.7" }
+
+# window
+winit = "0.26.1"
