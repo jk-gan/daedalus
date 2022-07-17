@@ -1,3 +1,4 @@
+use crate::renderer::Renderer;
 use winit::{
     dpi::LogicalSize,
     event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
@@ -8,6 +9,7 @@ use winit::{
 pub struct DadaelusWindow {
     event_loop: EventLoop<()>,
     winit_window: WinitWindow,
+    renderer: Renderer,
 }
 
 impl DadaelusWindow {
@@ -20,13 +22,16 @@ impl DadaelusWindow {
             .build(&event_loop)
             .unwrap();
 
+        let renderer = Renderer::new(&winit_window);
+
         Self {
             event_loop,
             winit_window,
+            renderer,
         }
     }
 
-    pub fn start_game_loop(self) {
+    pub fn start_game_loop(mut self) {
         self.event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::Poll;
 
@@ -54,7 +59,7 @@ impl DadaelusWindow {
                 // Event::UserEvent(_) => todo!(),
                 // Event::Suspended => todo!(),
                 // Event::Resumed => todo!(),
-                // Event::RedrawRequested(_) => {}
+                Event::RedrawRequested(_) => self.renderer.draw(),
                 // Event::LoopDestroyed => todo!(),
                 _ => {}
             }

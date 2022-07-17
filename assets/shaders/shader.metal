@@ -1,10 +1,10 @@
 #include <metal_stdlib>
-#import "./shader_types/shader_types.h"
+#import "../../src/shader_types/shader_types.h"
 
 using namespace metal;
 
 struct VertexIn {
-  float4 position [[attribute(Position)]];
+  float3 position [[attribute(Position)]];
 };
 
 struct VertexOut {
@@ -13,7 +13,7 @@ struct VertexOut {
 
 vertex VertexOut vertexMain(VertexIn vertexIn [[stage_in]]) {
   VertexOut out {
-    position = vertexIn.position,
+    .position = float4(vertexIn.position, 1.0),
   };
 
   return out;
