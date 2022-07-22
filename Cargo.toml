@@ -15,6 +15,8 @@ core-foundation = "0.9.3"
 core-graphics-types = "0.1.1"
 metal = "0.24.0"
 objc = { package = "objc2", version = "0.2.7" }
+once_cell = "1.13.0"
+shipyard = { git = "https://github.com/leudz/shipyard", branch = "master", features = ["thread_local"] }
 
 # window
 winit = "0.26.1"

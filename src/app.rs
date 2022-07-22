@@ -1,17 +1,18 @@
-use crate::window::DadaelusWindow;
+use crate::{core::engine::Engine, window::DaedalusWindow};
 
 pub struct App {
-    window: DadaelusWindow,
+    engine: Engine,
 }
 
 impl App {
     pub fn new(title: &str, width: u32, height: u32) -> Self {
+        let window = DaedalusWindow::new(title, width, height);
         Self {
-            window: DadaelusWindow::new(title, width, height),
+            engine: Engine::new(window),
         }
     }
 
     pub fn run(self) {
-        self.window.start_game_loop()
+        self.engine.start_game_loop();
     }
 }

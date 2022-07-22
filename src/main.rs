@@ -1,5 +1,6 @@
 mod app;
-mod renderer;
+mod core;
+mod rendering;
 mod shader_bindings;
 mod window;
 

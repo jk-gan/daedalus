@@ -1,6 +1,9 @@
-use crate::shader_bindings::{
-    Attributes_Bitangent, Attributes_Normal, Attributes_Position, Attributes_Tangent,
-    Attributes_UV, BufferIndices_VertexBuffer as VertexBufferIndex,
+use crate::{
+    shader_bindings::{
+        Attributes_Bitangent, Attributes_Normal, Attributes_Position, Attributes_Tangent,
+        Attributes_UV, BufferIndices_VertexBuffer as VertexBufferIndex,
+    },
+    window::DaedalusWindow,
 };
 use cocoa::{appkit::NSView, base::id as cocoa_id};
 use core_graphics_types::geometry::CGSize;
@@ -11,6 +14,8 @@ use metal::{
     RenderPipelineDescriptor, TextureDescriptor, VertexDescriptor,
 };
 use objc::runtime::YES;
+use shipyard::Unique;
+use std::any::Any;
 use winit::{platform::macos::WindowExtMacOS, window::Window};
 
 pub struct Triangle {
@@ -22,6 +27,7 @@ pub struct Scene {
     height: f32,
 }
 
+#[derive(Unique)]
 pub struct Renderer {
     draw_size_width: u64,
     draw_size_height: u64,
@@ -36,7 +42,7 @@ pub struct Renderer {
 impl Renderer {
     const PIXEL_FORMAT: MTLPixelFormat = MTLPixelFormat::BGRA8Unorm;
 
-    pub fn new(window: &Window) -> Self {
+    pub fn new(window: &DaedalusWindow) -> Self {
         #[cfg(not(target_os = "macos"))]
         panic!("The renderer only support macOS at the moment.");
 
@@ -66,12 +72,12 @@ impl Renderer {
         layer.set_presents_with_transaction(false);
 
         unsafe {
-            let view = window.ns_view() as cocoa_id;
+            let view = window.winit_window.ns_view() as cocoa_id;
             view.setWantsLayer(YES);
             view.setLayer(std::mem::transmute(layer.as_ref()));
         }
 
-        let draw_size = window.inner_size();
+        let draw_size = window.winit_window.inner_size();
         layer.set_drawable_size(CGSize::new(draw_size.width as f64, draw_size.height as f64));
 
         let command_queue = device.new_command_queue();
@@ -107,7 +113,7 @@ impl Renderer {
         }
     }
 
-    pub fn draw(&mut self) {
+    pub fn tick(&mut self) {
         // get this frame's target drawable
         let drawable = match self.layer.next_drawable() {
             Some(drawable) => drawable,
@@ -257,6 +263,37 @@ impl Renderer {
         command_buffer.commit();
     }
 }
+
+// impl EngineSubsystem for Renderer {
+//     fn as_any(&self) -> &dyn Any {
+//         self
+//     }
+
+//     fn on_init(&mut self, context: &Context) {
+//         // let window: &DaedalusWindow = context.get_subsystem::<DaedalusWindow>().unwrap();
+//         let window = context.get_window().unwrap();
+
+//         let layer = MetalLayer::new();
+//         layer.set_device(&self.device);
+//         layer.set_pixel_format(Self::PIXEL_FORMAT);
+//         layer.set_presents_with_transaction(false);
+
+//         unsafe {
+//             let view = window.winit_window.ns_view() as cocoa_id;
+//             view.setWantsLayer(YES);
+//             view.setLayer(std::mem::transmute(layer.as_ref()));
+//         }
+
+//         let draw_size = window.winit_window.inner_size();
+//         layer.set_drawable_size(CGSize::new(draw_size.width as f64, draw_size.height as f64));
+
+//         self.layer = Some(layer);
+//         self.scene = Some(Scene {
+//             width: draw_size.width as f32,
+//             height: draw_size.height as f32,
+//         });
+//     }
+// }
 
 fn get_high_performance_device() -> Option<Device> {
     let devices_list = Device::all();

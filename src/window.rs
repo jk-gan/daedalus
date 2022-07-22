@@ -1,4 +1,5 @@
-use crate::renderer::Renderer;
+use std::sync::Arc;
+use shipyard::World;
 use winit::{
     dpi::LogicalSize,
     event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
@@ -6,13 +7,12 @@ use winit::{
     window::{Window as WinitWindow, WindowBuilder},
 };
 
-pub struct DadaelusWindow {
+pub struct DaedalusWindow {
     event_loop: EventLoop<()>,
-    winit_window: WinitWindow,
-    renderer: Renderer,
+    pub winit_window: WinitWindow,
 }
 
-impl DadaelusWindow {
+impl DaedalusWindow {
     pub fn new(title: &str, width: u32, height: u32) -> Self {
         let event_loop = EventLoop::new();
         let size = LogicalSize::new(width, height);
@@ -22,16 +22,14 @@ impl DadaelusWindow {
             .build(&event_loop)
             .unwrap();
 
-        let renderer = Renderer::new(&winit_window);
-
         Self {
             event_loop,
             winit_window,
-            renderer,
         }
     }
 
-    pub fn start_game_loop(mut self) {
+    pub fn start_game_loop(mut self, world: Arc<World>) {
+
         self.event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::Poll;
 
@@ -59,7 +57,9 @@ impl DadaelusWindow {
                 // Event::UserEvent(_) => todo!(),
                 // Event::Suspended => todo!(),
                 // Event::Resumed => todo!(),
-                Event::RedrawRequested(_) => self.renderer.draw(),
+                Event::RedrawRequested(_) => {
+                    world.run_workload("TICK");
+                }
                 // Event::LoopDestroyed => todo!(),
                 _ => {}
             }
