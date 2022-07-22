@@ -15,8 +15,7 @@ use metal::{
 };
 use objc::runtime::YES;
 use shipyard::Unique;
-use std::any::Any;
-use winit::{platform::macos::WindowExtMacOS, window::Window};
+use winit::platform::macos::WindowExtMacOS;
 
 pub struct Triangle {
     vertices: [[f32; 3]; 3],
@@ -263,37 +262,6 @@ impl Renderer {
         command_buffer.commit();
     }
 }
-
-// impl EngineSubsystem for Renderer {
-//     fn as_any(&self) -> &dyn Any {
-//         self
-//     }
-
-//     fn on_init(&mut self, context: &Context) {
-//         // let window: &DaedalusWindow = context.get_subsystem::<DaedalusWindow>().unwrap();
-//         let window = context.get_window().unwrap();
-
-//         let layer = MetalLayer::new();
-//         layer.set_device(&self.device);
-//         layer.set_pixel_format(Self::PIXEL_FORMAT);
-//         layer.set_presents_with_transaction(false);
-
-//         unsafe {
-//             let view = window.winit_window.ns_view() as cocoa_id;
-//             view.setWantsLayer(YES);
-//             view.setLayer(std::mem::transmute(layer.as_ref()));
-//         }
-
-//         let draw_size = window.winit_window.inner_size();
-//         layer.set_drawable_size(CGSize::new(draw_size.width as f64, draw_size.height as f64));
-
-//         self.layer = Some(layer);
-//         self.scene = Some(Scene {
-//             width: draw_size.width as f32,
-//             height: draw_size.height as f32,
-//         });
-//     }
-// }
 
 fn get_high_performance_device() -> Option<Device> {
     let devices_list = Device::all();

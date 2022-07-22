@@ -58,7 +58,7 @@ impl DaedalusWindow {
                 // Event::Suspended => todo!(),
                 // Event::Resumed => todo!(),
                 Event::RedrawRequested(_) => {
-                    world.run_workload("TICK");
+                    world.run_workload("TICK").unwrap();
                 }
                 // Event::LoopDestroyed => todo!(),
                 _ => {}
