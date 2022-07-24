@@ -3,9 +3,11 @@ mod core;
 mod rendering;
 mod shader_bindings;
 mod window;
+mod resource;
+mod scene;
 
-const INITIAL_WINDOW_WIDTH: u32 = 1280;
-const INITIAL_WINDOW_HEIGHT: u32 = 720;
+const INITIAL_WINDOW_WIDTH: u32 = 1600;
+const INITIAL_WINDOW_HEIGHT: u32 = 900;
 
 fn main() {
     let app = app::App::new(

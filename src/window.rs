@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use shipyard::World;
+use std::sync::Arc;
 use winit::{
     dpi::LogicalSize,
     event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
@@ -28,8 +28,7 @@ impl DaedalusWindow {
         }
     }
 
-    pub fn start_game_loop(mut self, world: Arc<World>) {
-
+    pub fn start_game_loop(self, world: Arc<World>) {
         self.event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::Poll;
 
@@ -60,7 +59,14 @@ impl DaedalusWindow {
                 Event::RedrawRequested(_) => {
                     world.run_workload("TICK").unwrap();
                 }
-                // Event::LoopDestroyed => todo!(),
+                Event::LoopDestroyed => {
+                    // Visualize the ECS
+                    std::fs::write(
+                        "ecs.json",
+                        serde_json::to_string(&world.workloads_type_usage()).unwrap(),
+                    )
+                    .unwrap();
+                }
                 _ => {}
             }
         });

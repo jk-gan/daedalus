@@ -1,10 +1,12 @@
 use super::timer::Timer;
-use crate::{rendering::renderer::Renderer, window::DaedalusWindow};
-use shipyard::{borrow::NonSendSync, UniqueViewMut, Workload, World};
-use std::{sync::Arc, time::Instant};
-
-const INITIAL_WINDOW_WIDTH: u32 = 1280;
-const INITIAL_WINDOW_HEIGHT: u32 = 720;
+use crate::{rendering::renderer::Renderer, scene::SceneManager, window::DaedalusWindow};
+use glam::Vec3;
+use shipyard::{
+    borrow::NonSendSync, Component, EntitiesViewMut, IntoIter, UniqueView, UniqueViewMut, View,
+    ViewMut, Workload, World,
+};
+use std::{path::Path, sync::Arc};
+use uuid::Uuid;
 
 pub struct Engine {
     pub(crate) world: Arc<World>,
@@ -13,11 +15,16 @@ pub struct Engine {
 
 impl Engine {
     pub fn new(window: DaedalusWindow) -> Self {
-        let timer = Timer::new();
+        let draw_size = window.winit_window.inner_size();
+
         let world = World::default();
+
+        let scene_manager = SceneManager::new(draw_size.width as f32, draw_size.height as f32);
+        let timer = Timer::new();
         let renderer = Renderer::new(&window);
 
         world.add_unique(timer);
+        world.add_unique_non_send_sync(scene_manager);
         world.add_unique_non_send_sync(renderer);
 
         Workload::new("TICK")
@@ -25,6 +32,11 @@ impl Engine {
             .with_system(render)
             .add_to_world(&world)
             .unwrap();
+
+        world.run_with_data(
+            import_mesh,
+            std::path::Path::new("assets/meshes/SciFiHelmet/glTF/SciFiHelmet.gltf"),
+        );
 
         Self {
             world: Arc::new(world),
@@ -49,15 +61,60 @@ pub fn update(
 
 pub fn render(
     mut renderer: NonSendSync<UniqueViewMut<Renderer>>,
+    mut scene_manager: NonSendSync<UniqueViewMut<SceneManager>>,
+    meshes: View<MeshComponent>,
+    transforms: View<TransformComponent>,
     // transforms: View<TransformComponent>,
     // mesh_ids: View<MeshEntityId>,
     // meshes: View<StaticMesh>,
 ) {
-    // let mut renderable = vec![];
+    let mut renderables = Vec::new();
 
-    // for (transform, mesh_id) in (&transforms, &mesh_ids).iter() {
-    //     renderable.push((&transform.0, meshes.get(mesh_id.0).unwrap().0.clone()));
-    // }
+    for (mesh, transform) in (&meshes, &transforms).iter() {
+        renderables.push((&mesh.id, transform));
+    }
 
-    renderer.tick();
+    let current_scene = scene_manager.get_current_scene_mut();
+    renderer.tick(
+        &current_scene.models,
+        &mut current_scene.uniforms,
+        renderables,
+    );
+}
+
+pub fn import_mesh(
+    file_path: &Path,
+    renderer: NonSendSync<UniqueView<Renderer>>,
+    mut scene_manager: NonSendSync<UniqueViewMut<SceneManager>>,
+    mut meshes: ViewMut<MeshComponent>,
+    mut transforms: ViewMut<TransformComponent>,
+    mut entities: EntitiesViewMut,
+) {
+    let mesh_id = scene_manager.get_current_scene_mut().add_mesh(
+        &file_path,
+        &renderer.device,
+        &renderer.command_queue,
+    );
+
+    entities.add_entity(
+        (&mut meshes, &mut transforms),
+        (
+            MeshComponent { id: mesh_id },
+            TransformComponent {
+                scale: Vec3::new(1.0, 1.0, 1.0),
+                ..Default::default()
+            },
+        ),
+    );
+}
+
+#[derive(Component)]
+pub struct MeshComponent {
+    id: Uuid,
+}
+#[derive(Component, Default)]
+pub struct TransformComponent {
+    pub position: Vec3,
+    pub rotation: Vec3,
+    pub scale: Vec3,
 }

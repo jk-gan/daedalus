@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use crate::{
+    core::engine::TransformComponent,
     shader_bindings::{
         Attributes_Bitangent, Attributes_Normal, Attributes_Position, Attributes_Tangent,
-        Attributes_UV, BufferIndices_VertexBuffer as VertexBufferIndex,
+        Attributes_UV, BufferIndices_VertexBuffer as VertexBufferIndex, Uniforms,
     },
     window::DaedalusWindow,
 };
@@ -15,7 +18,10 @@ use metal::{
 };
 use objc::runtime::YES;
 use shipyard::Unique;
+use uuid::Uuid;
 use winit::platform::macos::WindowExtMacOS;
+
+use super::model::Model;
 
 pub struct Triangle {
     vertices: [[f32; 3]; 3],
@@ -28,14 +34,12 @@ pub struct Scene {
 
 #[derive(Unique)]
 pub struct Renderer {
-    draw_size_width: u64,
-    draw_size_height: u64,
     layer: MetalLayer,
-    command_queue: CommandQueue,
+    pub command_queue: CommandQueue,
     scene: Scene,
-    device: Device,
+    pub device: Device,
     library: Library,
-    vertex_buffer: Buffer,
+    // vertex_buffer: Buffer,
 }
 
 impl Renderer {
@@ -87,19 +91,19 @@ impl Renderer {
             .new_library_with_file(library_path)
             .expect("Invalid shader file.");
 
-        let triangle = Triangle {
-            vertices: [[0.0, -0.5, 0.0], [0.5, 0.5, 0.0], [-0.5, 0.5, 0.0]],
-        };
+        // let triangle = Triangle {
+        //     vertices: [[0.0, 0.5, 0.0], [0.5, -0.5, 0.0], [-0.5, -0.5, 0.0]],
+        // };
 
-        let vertex_buffer = device.new_buffer_with_data(
-            triangle.vertices.as_ptr() as *const _,
-            std::mem::size_of::<[[f32; 3]; 3]>() as u64,
-            MTLResourceOptions::CPUCacheModeDefaultCache | MTLResourceOptions::StorageModeManaged,
-        );
+        // let vertex_buffer = device.new_buffer_with_data(
+        //     triangle.vertices.as_ptr() as *const _,
+        //     std::mem::size_of::<[[f32; 3]; 3]>() as u64,
+        //     MTLResourceOptions::CPUCacheModeDefaultCache | MTLResourceOptions::StorageModeManaged,
+        // );
 
         Self {
-            draw_size_width: draw_size.width as u64,
-            draw_size_height: draw_size.height as u64,
+            // draw_size_width: draw_size.width as u64,
+            // draw_size_height: draw_size.height as u64,
             layer,
             command_queue,
             scene: Scene {
@@ -108,11 +112,16 @@ impl Renderer {
             },
             device,
             library,
-            vertex_buffer,
+            // vertex_buffer,
         }
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(
+        &mut self,
+        models: &HashMap<Uuid, Model>,
+        uniforms: &mut [Uniforms; 1],
+        renderables: Vec<(&Uuid, &TransformComponent)>,
+    ) {
         // get this frame's target drawable
         let drawable = match self.layer.next_drawable() {
             Some(drawable) => drawable,
@@ -185,48 +194,48 @@ impl Renderer {
         offset += std::mem::size_of::<f32>() as u64 * 3;
 
         // normal
-        // let attribute_1 = vertex_descriptor
-        //     .attributes()
-        //     .object_at(Attributes_Normal as u64)
-        //     .unwrap();
-        // attribute_1.set_format(MTLVertexFormat::Float3);
-        // attribute_1.set_offset(offset);
-        // attribute_1.set_buffer_index(VertexBufferIndex as u64);
+        let attribute_1 = vertex_descriptor
+            .attributes()
+            .object_at(Attributes_Normal as u64)
+            .unwrap();
+        attribute_1.set_format(MTLVertexFormat::Float3);
+        attribute_1.set_offset(offset);
+        attribute_1.set_buffer_index(VertexBufferIndex as u64);
 
-        // offset += std::mem::size_of::<f32>() as u64 * 3;
+        offset += std::mem::size_of::<f32>() as u64 * 3;
 
         // UV
-        // let attribute_2 = vertex_descriptor
-        //     .attributes()
-        //     .object_at(Attributes_UV as u64)
-        //     .unwrap();
-        // attribute_2.set_format(MTLVertexFormat::Float2);
-        // attribute_2.set_offset(offset);
-        // attribute_2.set_buffer_index(VertexBufferIndex as u64);
+        let attribute_2 = vertex_descriptor
+            .attributes()
+            .object_at(Attributes_UV as u64)
+            .unwrap();
+        attribute_2.set_format(MTLVertexFormat::Float2);
+        attribute_2.set_offset(offset);
+        attribute_2.set_buffer_index(VertexBufferIndex as u64);
 
-        // offset += std::mem::size_of::<f32>() as u64 * 2;
+        offset += std::mem::size_of::<f32>() as u64 * 2;
 
         // tangent
-        // let attribute_3 = vertex_descriptor
-        //     .attributes()
-        //     .object_at(Attributes_Tangent as u64)
-        //     .unwrap();
-        // attribute_3.set_format(MTLVertexFormat::Float3);
-        // attribute_3.set_offset(offset);
-        // attribute_3.set_buffer_index(VertexBufferIndex as u64);
+        let attribute_3 = vertex_descriptor
+            .attributes()
+            .object_at(Attributes_Tangent as u64)
+            .unwrap();
+        attribute_3.set_format(MTLVertexFormat::Float3);
+        attribute_3.set_offset(offset);
+        attribute_3.set_buffer_index(VertexBufferIndex as u64);
 
-        // offset += std::mem::size_of::<f32>() as u64 * 3;
+        offset += std::mem::size_of::<f32>() as u64 * 3;
 
         // bitangent
-        // let attribute_4 = vertex_descriptor
-        //     .attributes()
-        //     .object_at(Attributes_Bitangent as u64)
-        //     .unwrap();
-        // attribute_4.set_format(MTLVertexFormat::Float3);
-        // attribute_4.set_offset(offset);
-        // attribute_4.set_buffer_index(VertexBufferIndex as u64);
+        let attribute_4 = vertex_descriptor
+            .attributes()
+            .object_at(Attributes_Bitangent as u64)
+            .unwrap();
+        attribute_4.set_format(MTLVertexFormat::Float3);
+        attribute_4.set_offset(offset);
+        attribute_4.set_buffer_index(VertexBufferIndex as u64);
 
-        // offset += std::mem::size_of::<f32>() as u64 * 3;
+        offset += std::mem::size_of::<f32>() as u64 * 3;
 
         let layout_0 = vertex_descriptor
             .layouts()
@@ -245,13 +254,19 @@ impl Renderer {
         // render_command_encoder.set_depth_stencil_state(&self.depth_stencil_state.as_ref().unwrap());
         render_command_encoder.set_render_pipeline_state(&render_pipeline_state);
 
-        render_command_encoder.set_vertex_buffer(
-            VertexBufferIndex as u64,
-            Some(&self.vertex_buffer),
-            0,
-        );
+        // render_command_encoder.set_vertex_buffer(
+        //     VertexBufferIndex as u64,
+        //     Some(&self.vertex_buffer),
+        //     0,
+        // );
 
-        render_command_encoder.draw_primitives(MTLPrimitiveType::Triangle, 0, 3);
+        for (id, transform) in renderables {
+            if let Some(model) = models.get(&id) {
+                model.render(&render_command_encoder, &transform, uniforms);
+            }
+        }
+
+        // render_command_encoder.draw_primitives(MTLPrimitiveType::Triangle, 0, 3);
 
         render_command_encoder.end_encoding();
 

@@ -23,6 +23,9 @@ typedef enum {
 typedef enum {
   BaseColor = 0,
   NormalMap = 1,
+  MetallicRoughnessTexture = 2,
+  OcclusionTexture = 3,
+  EmissiveTexture = 4,
 } TextureIndices;
 
 typedef enum {
