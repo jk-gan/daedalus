@@ -5,7 +5,7 @@ use crate::{
     rendering::render_pass::forward_render_pass::ForwardRenderPass,
     shader_bindings::{
         Attributes_Bitangent, Attributes_Normal, Attributes_Position, Attributes_Tangent,
-        Attributes_UV, BufferIndices_VertexBuffer as VertexBufferIndex, Uniforms,
+        Attributes_UV, BufferIndices_VertexBuffer as VertexBufferIndex, Params, Uniforms,
     },
     window::DaedalusWindow,
 };
@@ -114,6 +114,7 @@ impl Renderer {
         &mut self,
         models: &HashMap<Uuid, Model>,
         uniforms: &mut [Uniforms; 1],
+        params: &mut [Params; 1],
         renderables: Vec<(&Uuid, &TransformComponent)>,
     ) {
         // get this frame's target drawable
@@ -132,6 +133,7 @@ impl Renderer {
             .unwrap();
         color_attachment.set_texture(Some(&drawable.texture()));
         color_attachment.set_clear_color(MTLClearColor::new(0.2, 0.2, 0.25, 1.0));
+        // color_attachment.set_clear_color(MTLClearColor::new(1.0, 1.0, 1.0, 1.0));
         color_attachment.set_load_action(MTLLoadAction::Clear);
         color_attachment.set_store_action(MTLStoreAction::Store);
 
@@ -153,6 +155,7 @@ impl Renderer {
         self.forward_render_pass.draw(
             command_buffer,
             uniforms,
+            params,
             render_pass_descriptor,
             models,
             renderables,

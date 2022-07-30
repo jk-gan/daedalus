@@ -77,6 +77,7 @@ pub fn render(
     renderer.tick(
         &current_scene.models,
         &mut current_scene.uniforms,
+        &mut current_scene.params,
         renderables,
     );
 }

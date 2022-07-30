@@ -4,9 +4,9 @@ use crate::{
         data::vertex::VertexPosNorTexTanBi,
         importer::{gltf::GltfImporter, Importer},
     },
-    shader_bindings::Uniforms,
+    shader_bindings::{Uniforms, Params},
 };
-use glam::{Vec3, Mat4, Mat3A};
+use glam::{Vec3, Mat4, Mat3A, Vec3A};
 use metal::{
     Device, MTLIndexType, MTLOrigin, MTLPixelFormat, MTLRegion, MTLResourceOptions, MTLSize,
     MTLStorageMode, Texture, TextureDescriptor, CommandQueue,
@@ -32,11 +32,26 @@ impl Uniforms {
     }
 }
 
+impl Params {
+    pub fn new() -> Self {
+        Self {
+            // pointLightCount: 0,
+            cameraPosition: unsafe { std::mem::transmute(Vec3A::ZERO) },
+            // __bindgen_padding_0: unsafe { std::mem::zeroed() },
+        }
+    }
+
+    pub fn update(&mut self, camera: &FirstPersonCamera) {
+        self.cameraPosition = unsafe { std::mem::transmute(Vec3A::from(camera.position)) };
+    }
+}
+
 pub struct Scene {
     pub models: HashMap<Uuid, Model>,
     editor_camera: FirstPersonCamera,
     editor_camera_controller: CameraController,
     pub uniforms: [Uniforms; 1],
+    pub params: [Params; 1],
 }
 
 impl Scene {
@@ -51,14 +66,19 @@ impl Scene {
             0.1,
         );
         let editor_camera_controller = CameraController::new(4.0, 15.0);
+
         let mut uniforms = Uniforms::new();
         uniforms.update(&editor_camera);
+
+        let mut params = Params::new();
+        params.update(&editor_camera);
 
         Self {
             models: HashMap::new(),
             editor_camera,
             editor_camera_controller,
-            uniforms: [uniforms]
+            uniforms: [uniforms],
+            params: [params]
         }
     }
 

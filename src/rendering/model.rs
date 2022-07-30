@@ -2,11 +2,11 @@ use crate::{
     core::engine::TransformComponent,
     shader_bindings::{
         // BufferIndices_MaterialBuffer as MaterialBufferIndex,
-        // BufferIndices_ParamsBuffer as ParamsBufferIndex,
+        BufferIndices_ParamsBuffer as ParamsBufferIndex,
         // BufferIndices_PerInstanceUniformsBuffer as PerInstanceUniformsBufferIndex,
         BufferIndices_UniformsBuffer as UniformsBufferIndex,
         BufferIndices_VertexBuffer as VertexBufferIndex,
-        // Params,
+        Params,
         // PerInstanceUniforms,
         TextureIndices_BaseColor as BaseColorIndex,
         TextureIndices_EmissiveTexture as EmissiveTextureIndex,
@@ -34,7 +34,7 @@ impl Model {
         render_command_encoder: &RenderCommandEncoderRef,
         transform: &TransformComponent,
         uniforms: &mut [Uniforms],
-        // params: &mut [Params],
+        params: &mut [Params],
     ) {
         let model_matrix = {
             let translate_matrix = Mat4::from_translation(transform.position);
@@ -57,11 +57,11 @@ impl Model {
             uniforms.as_ptr() as *const _,
         );
 
-        // render_command_encoder.set_fragment_bytes(
-        //     ParamsBufferIndex as u64,
-        //     std::mem::size_of::<Params>() as u64,
-        //     params.as_ptr() as *const _,
-        // );
+        render_command_encoder.set_fragment_bytes(
+            ParamsBufferIndex as u64,
+            std::mem::size_of::<Params>() as u64,
+            params.as_ptr() as *const _,
+        );
 
         // render_command_encoder.set_fragment_sampler_state(0, Some(&self.sampler_state));
 

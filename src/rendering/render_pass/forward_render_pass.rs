@@ -1,5 +1,9 @@
 use super::{pipeline::PipelineStateType, RenderPass};
-use crate::{core::engine::TransformComponent, rendering::model::Model, shader_bindings::Uniforms};
+use crate::{
+    core::engine::TransformComponent,
+    rendering::model::Model,
+    shader_bindings::{Params, Uniforms},
+};
 use metal::{
     CommandBufferRef, DepthStencilState, Device, Library, MTLCullMode, MTLPixelFormat, MTLWinding,
     RenderPassDescriptorRef, RenderPipelineState,
@@ -35,6 +39,7 @@ impl RenderPass for ForwardRenderPass {
         &self,
         command_buffer: &CommandBufferRef,
         uniforms: &mut [Uniforms; 1],
+        params: &mut [Params; 1],
         render_pass_descriptor: &RenderPassDescriptorRef,
         models: &HashMap<Uuid, Model>,
         renderables: Vec<(&Uuid, &TransformComponent)>,
@@ -50,7 +55,7 @@ impl RenderPass for ForwardRenderPass {
 
         for (id, transform) in renderables {
             if let Some(model) = models.get(&id) {
-                model.render(&render_command_encoder, &transform, uniforms);
+                model.render(&render_command_encoder, &transform, uniforms, params);
             }
         }
 
