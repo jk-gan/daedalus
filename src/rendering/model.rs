@@ -66,15 +66,6 @@ impl Model {
         // render_command_encoder.set_fragment_sampler_state(0, Some(&self.sampler_state));
 
         for mesh in self.meshes.iter() {
-            // for (index, vertex_buffer) in mesh.vertex_buffers.iter().enumerate() {
-            //     render_command_encoder.set_vertex_buffer(
-            //         VertexBufferIndex as u64,
-            //         // index as u64,
-            //         Some(&vertex_buffer.raw),
-            //         0,
-            //     )
-            // }
-
             for submesh in mesh.submeshes.iter() {
                 render_command_encoder.set_vertex_buffer(
                     VertexBufferIndex as u64,

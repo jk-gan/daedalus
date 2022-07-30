@@ -32,6 +32,20 @@ vertex VertexOut vertexMain(VertexIn in [[stage_in]], constant Uniforms &uniform
   return out;
 }
 
-fragment float4 fragmentMain(VertexOut in [[stage_in]]) {
-  return float4(1);
-}
+fragment float4 fragmentMain(
+  VertexOut in [[stage_in]],
+  texture2d<float> normalMap [[texture(NormalMap)]]
+) {
+  constexpr sampler textureSampler(filter::linear);
+  // return float4(1);
+  float3 normal;
+  if (is_null_texture(normalMap)) {
+    normal = in.worldNormal;
+  } else {
+    normal = normalMap.sample(
+    textureSampler,
+    in.uv * 1).rgb;
+  }
+  normal = normalize(normal);
+  return float4(normal, 1);
+  }

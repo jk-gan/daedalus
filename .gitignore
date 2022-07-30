@@ -1,2 +1,13 @@
 /target
 .DS_Store
+
+# compiled shaders
+*.air
+*.metallib
+*.metallibsym
+
+# for shader_types cache
+shader_types_hash
+
+# ecs
+ecs.json
