@@ -41,6 +41,7 @@ impl FirstPersonCamera {
 
     pub fn set_aspect_ration(&mut self, aspect_ratio: f32) {
         self.aspect_ratio = aspect_ratio;
+        println!("new aspect_ratio: {}", aspect_ratio);
     }
 
     pub fn view_matrix(&self) -> Mat4 {

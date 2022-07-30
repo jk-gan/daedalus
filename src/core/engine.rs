@@ -50,11 +50,13 @@ impl Engine {
 }
 
 pub fn update(
-    // mut renderer: NonSendSync<UniqueViewMut<RendererEntity>>,
     mut timer: UniqueViewMut<Timer>,
+    mut scene_manager: NonSendSync<UniqueViewMut<SceneManager>>,
 ) {
     let delta_time = timer.get_delta_time();
     println!("delta_time: {:?}", delta_time);
+
+    scene_manager.get_current_scene_mut().update(delta_time);
 
     // renderer.0.update(dt);
 }
@@ -64,9 +66,6 @@ pub fn render(
     mut scene_manager: NonSendSync<UniqueViewMut<SceneManager>>,
     meshes: View<MeshComponent>,
     transforms: View<TransformComponent>,
-    // transforms: View<TransformComponent>,
-    // mesh_ids: View<MeshEntityId>,
-    // meshes: View<StaticMesh>,
 ) {
     let mut renderables = Vec::new();
 

@@ -12,7 +12,8 @@ use metal::{
     MTLStorageMode, Texture, TextureDescriptor, CommandQueue,
 };
 use shipyard::Unique;
-use std::{collections::HashMap, path::Path, sync::Arc};
+use winit::event::{VirtualKeyCode, ElementState, MouseScrollDelta};
+use std::{collections::HashMap, path::Path, sync::Arc, time::Duration};
 use uuid::Uuid;
 
 impl Uniforms {
@@ -59,6 +60,35 @@ impl Scene {
             editor_camera_controller,
             uniforms: [uniforms]
         }
+    }
+
+    pub fn resize(&mut self, width: f32, height: f32) {
+        self.editor_camera.set_aspect_ration(width / height);
+        // self.forward_render_pass
+        //     .resize(Self::PIXEL_FORMAT, (width, height));
+    }
+
+    pub fn update(&mut self, delta_time: Duration) {
+        self
+            .editor_camera_controller
+            .update(&mut self.editor_camera, delta_time);
+        self.uniforms[0].update(&self.editor_camera);
+    }
+
+    pub fn handle_keyboard_event(&mut self, key: VirtualKeyCode, state: ElementState) {
+        self
+            .editor_camera_controller
+            .handle_keyboard_event(key, state);
+    }
+
+    pub fn handle_mouse_event(&mut self, mouse_dx: f64, mouse_dy: f64) {
+        self
+            .editor_camera_controller
+            .handle_mouse_event(mouse_dx, mouse_dy);
+    }
+
+    pub fn handle_scroll_event(&mut self, delta: &MouseScrollDelta) {
+        self.editor_camera_controller.handle_scroll_event(delta);
     }
 
     pub fn add_mesh(&mut self, file_path: &Path, device: &Device, command_queue: &CommandQueue) -> Uuid {
