@@ -7,7 +7,7 @@ typedef struct {
   // uint width;
   // uint height;
   // uint tiling;
-  // uint lightCount;
+  unsigned pointLightCount;
   vector_float3 cameraPosition;
 } Params;
 

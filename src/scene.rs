@@ -1,5 +1,5 @@
 use crate::{
-    rendering::{model::{Submesh, Material, Mesh, Model}, camera::{FirstPersonCamera, CameraController}},
+    rendering::{model::{Submesh, Material, Mesh, Model}, camera::{FirstPersonCamera, CameraController}, light::{DirectionalLight, PointLight}},
     resource::{
         data::vertex::VertexPosNorTexTanBi,
         importer::{gltf::GltfImporter, Importer},
@@ -35,9 +35,9 @@ impl Uniforms {
 impl Params {
     pub fn new() -> Self {
         Self {
-            // pointLightCount: 0,
+            pointLightCount: 0,
             cameraPosition: unsafe { std::mem::transmute(Vec3A::ZERO) },
-            // __bindgen_padding_0: unsafe { std::mem::zeroed() },
+            __bindgen_padding_0: unsafe { std::mem::zeroed() },
         }
     }
 
@@ -52,6 +52,8 @@ pub struct Scene {
     editor_camera_controller: CameraController,
     pub uniforms: [Uniforms; 1],
     pub params: [Params; 1],
+    pub directional_light: DirectionalLight,
+    pub point_lights: Vec<PointLight>
 }
 
 impl Scene {
@@ -67,10 +69,24 @@ impl Scene {
         );
         let editor_camera_controller = CameraController::new(4.0, 15.0);
 
+        let sun_light = DirectionalLight {
+            position: (0.0, 30.0, 30.0).into(),
+            color: (1.0, 1.0, 1.0).into(),
+        };
+
+        let mut point_lights = Vec::new();
+        let red_light = PointLight {
+            position: (0.0, 0.0, 3.0).into(),
+            color: (1.0, 0.0, 0.0).into(),
+            attenuation: (0.5, 2.0, 1.0).into(),
+        };
+        point_lights.push(red_light);
+
         let mut uniforms = Uniforms::new();
         uniforms.update(&editor_camera);
 
         let mut params = Params::new();
+        params.pointLightCount = point_lights.len() as u32;
         params.update(&editor_camera);
 
         Self {
@@ -78,7 +94,9 @@ impl Scene {
             editor_camera,
             editor_camera_controller,
             uniforms: [uniforms],
-            params: [params]
+            params: [params],
+            directional_light: sun_light,
+            point_lights
         }
     }
 
@@ -93,6 +111,7 @@ impl Scene {
             .editor_camera_controller
             .update(&mut self.editor_camera, delta_time);
         self.uniforms[0].update(&self.editor_camera);
+        self.params[0].update(&self.editor_camera);
     }
 
     pub fn handle_keyboard_event(&mut self, key: VirtualKeyCode, state: ElementState) {

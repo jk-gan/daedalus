@@ -4,6 +4,7 @@ pub mod pipeline;
 use super::model::Model;
 use crate::{
     core::engine::TransformComponent,
+    scene::Scene,
     shader_bindings::{Params, Uniforms},
 };
 use metal::{
@@ -20,11 +21,12 @@ pub trait RenderPass {
     fn draw(
         &self,
         command_buffer: &CommandBufferRef,
-        uniforms: &mut [Uniforms; 1],
-        params: &mut [Params; 1],
+        // uniforms: &mut [Uniforms; 1],
+        // params: &mut [Params; 1],
         render_pass_descriptor: &RenderPassDescriptorRef,
-        models: &HashMap<Uuid, Model>,
+        // models: &HashMap<Uuid, Model>,
         renderables: Vec<(&Uuid, &TransformComponent)>,
+        scene: &mut Scene,
     );
 
     fn build_depth_stencil_state(device: &Device) -> DepthStencilState {

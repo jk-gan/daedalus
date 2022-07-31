@@ -75,10 +75,8 @@ pub fn render(
 
     let current_scene = scene_manager.get_current_scene_mut();
     renderer.tick(
-        &current_scene.models,
-        &mut current_scene.uniforms,
-        &mut current_scene.params,
         renderables,
+        current_scene,
     );
 }
 
@@ -112,6 +110,7 @@ pub fn import_mesh(
 pub struct MeshComponent {
     id: Uuid,
 }
+
 #[derive(Component, Default)]
 pub struct TransformComponent {
     pub position: Vec3,

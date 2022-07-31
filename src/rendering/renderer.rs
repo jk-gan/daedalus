@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-
 use crate::{
     core::engine::TransformComponent,
     rendering::render_pass::forward_render_pass::ForwardRenderPass,
+    scene::Scene,
     shader_bindings::{
         Attributes_Bitangent, Attributes_Normal, Attributes_Position, Attributes_Tangent,
         Attributes_UV, BufferIndices_VertexBuffer as VertexBufferIndex, Params, Uniforms,
@@ -23,11 +23,6 @@ use uuid::Uuid;
 use winit::platform::macos::WindowExtMacOS;
 
 use super::{model::Model, render_pass::RenderPass};
-
-pub struct Scene {
-    width: f32,
-    height: f32,
-}
 
 #[derive(Unique)]
 pub struct Renderer {
@@ -112,10 +107,11 @@ impl Renderer {
 
     pub fn tick(
         &mut self,
-        models: &HashMap<Uuid, Model>,
-        uniforms: &mut [Uniforms; 1],
-        params: &mut [Params; 1],
+        // models: &HashMap<Uuid, Model>,
+        // uniforms: &mut [Uniforms; 1],
+        // params: &mut [Params; 1],
         renderables: Vec<(&Uuid, &TransformComponent)>,
+        scene: &mut Scene,
     ) {
         // get this frame's target drawable
         let drawable = match self.layer.next_drawable() {
@@ -154,11 +150,9 @@ impl Renderer {
 
         self.forward_render_pass.draw(
             command_buffer,
-            uniforms,
-            params,
             render_pass_descriptor,
-            models,
             renderables,
+            scene,
         );
 
         // tell CoreAnimation when to present this drawable

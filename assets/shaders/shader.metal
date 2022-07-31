@@ -36,6 +36,17 @@ float3 BRDF(
   float3 lightColor
 );
 
+struct DirectionalLight {
+  float3 position;
+  float3 color;
+};
+
+struct PointLight {
+  float3 position;
+  float3 color;
+  float3 attenuation;
+};
+
 struct VertexIn {
   float3 position [[attribute(Position)]];
   float3 normal [[attribute(Normal)]];
@@ -56,6 +67,8 @@ struct VertexOut {
 vertex VertexOut vertexMain(VertexIn in [[stage_in]], constant Uniforms &uniforms [[buffer(UniformsBuffer)]]) {
   VertexOut out {
     .position = uniforms.projectionMatrix * uniforms.viewMatrix * uniforms.modelMatrix * float4(in.position, 1),
+    // TODO: This is only correct in certain situations
+    // only works correctly if scale is uniform (scale.x == scale.y == scale.z)
     .worldPosition = (uniforms.modelMatrix * float4(in.position, 1)).xyz,
     .worldNormal = uniforms.normalMatrix * in.normal,
     .worldTangent = uniforms.normalMatrix * in.tangent,
@@ -68,6 +81,8 @@ vertex VertexOut vertexMain(VertexIn in [[stage_in]], constant Uniforms &uniform
 fragment float4 fragmentMain(
   VertexOut in [[stage_in]],
   constant Params &params [[buffer(ParamsBuffer)]],
+  constant DirectionalLight &sunLight [[buffer(DirectionalLightBuffer)]],
+  constant PointLight *pointLights [[buffer(PointLightBuffer)]],
   texture2d<float> baseColorTexture [[texture(BaseColor)]],
   texture2d<float> normalMap [[texture(NormalMap)]],
   texture2d<float> metallicRoughnessTexture [[texture(MetallicRoughnessTexture)]],
@@ -87,13 +102,18 @@ fragment float4 fragmentMain(
           in.uv).rgb;
   }
 
+  // normal map
   float3 normal;
   if (is_null_texture(normalMap)) {
     normal = in.worldNormal;
   } else {
-    normal = normalMap.sample(
-    textureSampler,
-    in.uv * 1).rgb;
+    float3 normalValue = normalMap.sample(
+      textureSampler,
+      in.uv).xyz * 2.0 - 1.0;
+    normal = float3x3(
+      in.worldTangent,
+      in.worldBitangent,
+      in.worldNormal) * normalValue;
   }
   normal = normalize(normal);
 
@@ -122,11 +142,7 @@ fragment float4 fragmentMain(
   float reflectance = 0.5;
 
   float3 viewDirection = normalize(params.cameraPosition - in.worldPosition);
-  // float3 lightDirection = normalize(sunLight.position);
-  float3 lightDirection = normalize(float3(0, 0, 100));
-
-  /* float3 specularColor = 0; */
-  /* float3 diffuseColor = 0; */
+  float3 lightDirection = normalize(sunLight.position);
 
   float3 brdfColor = BRDF(
     viewDirection,
@@ -137,9 +153,36 @@ fragment float4 fragmentMain(
     reflectance,
     metallic,
     ambientOcclusion,
-    float3(1)
-    // sunLight.color
+    sunLight.color
   );
+
+  for (uint i = 0; i < params.pointLightCount; i++) {
+    PointLight light = pointLights[i];
+
+    // 1
+    float d = distance(light.position, in.worldPosition);
+    // 2
+    float3 lightDirection = normalize(light.position - in.worldPosition);
+    // 3
+    float attenuation = 1.0 / (light.attenuation.x +
+        light.attenuation.y * d + light.attenuation.z * d * d);
+
+    float3 color = BRDF(
+      viewDirection,
+      lightDirection,
+      normal,
+      baseColor,
+      perceptualRoughness,
+      reflectance,
+      metallic,
+      ambientOcclusion,
+      light.color
+    );
+
+    color *= attenuation;
+
+    brdfColor += color;
+  }
 
   float4 color = float4(brdfColor, 1.0);
   color += float4(emissiveColor, 1.0);
@@ -190,12 +233,14 @@ float3 computeDiffuse(
   float3 normal,
   float3 lightDirection)
 {
-  /* float nDotL = saturate(dot(normal, lightDirection)); */
-  /* float nDotL = */
-  /*     dot(normal, lightDirection) * 0.5 + 0.5; */
+  // Lambert
+  // float nDotL = saturate(dot(normal, lightDirection));
+
+  // Half Lambert
+  float nDotL = dot(normal, lightDirection) * 0.5 + 0.5;
+
   float3 diffuse = float3((Fd_Lambert() * baseColor) * (1.0 - metallic));
-  return diffuse;
-  /* return diffuse * nDotL * ambientOcclusion; */
+  return diffuse * nDotL * ambientOcclusion;
 }
 
 // Normal distribution function
@@ -204,7 +249,7 @@ float D_GGX(float NoH, float roughness) {
   float a2 = roughness * roughness;
   float f = (NoH * a2 - NoH) * NoH + 1.0;
   return a2 / (PI * f * f);
-} 
+}
 
 // Geometric shadowing (G)
 float V_SmithGGXCorrelated(float NoV, float NoL, float roughness) {
@@ -260,5 +305,3 @@ float3 BRDF(
 
   return (Fr + Fd) * NoL;
 }
-
-

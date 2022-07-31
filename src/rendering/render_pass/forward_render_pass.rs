@@ -1,8 +1,15 @@
 use super::{pipeline::PipelineStateType, RenderPass};
 use crate::{
     core::engine::TransformComponent,
-    rendering::model::Model,
-    shader_bindings::{Params, Uniforms},
+    rendering::{
+        light::{DirectionalLight, PointLight},
+        model::Model,
+    },
+    scene::Scene,
+    shader_bindings::{
+        BufferIndices_DirectionalLightBuffer as DirectionalLightBufferIndex,
+        BufferIndices_PointLightBuffer as PointLightBufferIndex, Params, Uniforms,
+    },
 };
 use metal::{
     CommandBufferRef, DepthStencilState, Device, Library, MTLCullMode, MTLPixelFormat, MTLWinding,
@@ -38,11 +45,9 @@ impl RenderPass for ForwardRenderPass {
     fn draw(
         &self,
         command_buffer: &CommandBufferRef,
-        uniforms: &mut [Uniforms; 1],
-        params: &mut [Params; 1],
         render_pass_descriptor: &RenderPassDescriptorRef,
-        models: &HashMap<Uuid, Model>,
         renderables: Vec<(&Uuid, &TransformComponent)>,
+        scene: &mut Scene,
     ) {
         let render_command_encoder =
             command_buffer.new_render_command_encoder(render_pass_descriptor);
@@ -53,9 +58,27 @@ impl RenderPass for ForwardRenderPass {
         render_command_encoder.set_cull_mode(MTLCullMode::Back);
         render_command_encoder.set_front_facing_winding(MTLWinding::CounterClockwise);
 
+        // TODO: might want to handle the no directional light case
+        render_command_encoder.set_fragment_bytes(
+            DirectionalLightBufferIndex as u64,
+            std::mem::size_of::<DirectionalLight>() as u64,
+            [scene.directional_light].as_ptr() as *const _,
+        );
+
+        render_command_encoder.set_fragment_bytes(
+            PointLightBufferIndex as u64,
+            std::mem::size_of::<PointLight>() as u64 * scene.point_lights.len() as u64,
+            scene.point_lights.as_ptr() as *const _,
+        );
+
         for (id, transform) in renderables {
-            if let Some(model) = models.get(&id) {
-                model.render(&render_command_encoder, &transform, uniforms, params);
+            if let Some(model) = scene.models.get(&id) {
+                model.render(
+                    &render_command_encoder,
+                    &transform,
+                    &mut scene.uniforms,
+                    &mut scene.params,
+                );
             }
         }
 
