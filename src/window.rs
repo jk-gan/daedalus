@@ -1,5 +1,5 @@
 use shipyard::{NonSendSync, UniqueViewMut, World};
-use std::{borrow::BorrowMut, sync::Arc};
+use std::sync::Arc;
 use winit::{
     dpi::LogicalSize,
     event::{DeviceEvent, ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
@@ -95,7 +95,10 @@ impl DaedalusWindow {
                 },
                 // Event::NewEvents(_) => todo!(),
                 // Event::RedrawEventsCleared => todo!(),
-                Event::DeviceEvent { device_id, event } => match event {
+                Event::DeviceEvent {
+                    device_id: _,
+                    event,
+                } => match event {
                     DeviceEvent::Key(KeyboardInput {
                         state: _state,
                         virtual_keycode: Some(_key),

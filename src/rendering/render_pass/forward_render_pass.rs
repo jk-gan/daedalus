@@ -1,21 +1,17 @@
 use super::{pipeline::PipelineStateType, RenderPass};
 use crate::{
     core::engine::TransformComponent,
-    rendering::{
-        light::{DirectionalLight, PointLight},
-        model::Model,
-    },
+    rendering::light::{DirectionalLight, PointLight},
     scene::Scene,
     shader_bindings::{
         BufferIndices_DirectionalLightBuffer as DirectionalLightBufferIndex,
-        BufferIndices_PointLightBuffer as PointLightBufferIndex, Params, Uniforms,
+        BufferIndices_PointLightBuffer as PointLightBufferIndex,
     },
 };
 use metal::{
     CommandBufferRef, DepthStencilState, Device, Library, MTLCullMode, MTLPixelFormat, MTLWinding,
     RenderPassDescriptorRef, RenderPipelineState,
 };
-use std::collections::HashMap;
 use uuid::Uuid;
 
 #[derive(Debug)]

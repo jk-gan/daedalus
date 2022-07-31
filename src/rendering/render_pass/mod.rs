@@ -1,18 +1,12 @@
 pub mod forward_render_pass;
 pub mod pipeline;
 
-use super::model::Model;
-use crate::{
-    core::engine::TransformComponent,
-    scene::Scene,
-    shader_bindings::{Params, Uniforms},
-};
+use crate::{core::engine::TransformComponent, scene::Scene};
 use metal::{
     CommandBufferRef, DepthStencilDescriptor, DepthStencilState, Device, MTLCompareFunction,
     MTLPixelFormat, MTLStorageMode, MTLTextureUsage, RenderPassDescriptorRef, Texture,
     TextureDescriptor,
 };
-use std::collections::HashMap;
 use uuid::Uuid;
 
 pub trait RenderPass {

@@ -1,28 +1,20 @@
-use std::collections::HashMap;
 use crate::{
     core::engine::TransformComponent,
-    rendering::render_pass::forward_render_pass::ForwardRenderPass,
-    scene::Scene,
-    shader_bindings::{
-        Attributes_Bitangent, Attributes_Normal, Attributes_Position, Attributes_Tangent,
-        Attributes_UV, BufferIndices_VertexBuffer as VertexBufferIndex, Params, Uniforms,
-    },
+    rendering::render_pass::forward_render_pass::ForwardRenderPass, scene::Scene,
     window::DaedalusWindow,
 };
 use cocoa::{appkit::NSView, base::id as cocoa_id};
 use core_graphics_types::geometry::CGSize;
 use metal::{
-    Buffer, CommandQueue, Device, Library, MTLClearColor, MTLCommandQueue, MTLGPUFamily,
-    MTLLoadAction, MTLPixelFormat, MTLPrimitiveType, MTLResourceOptions, MTLStorageMode,
-    MTLStoreAction, MTLTextureUsage, MTLVertexFormat, MetalLayer, RenderPassDescriptor,
-    RenderPipelineDescriptor, TextureDescriptor, VertexDescriptor,
+    CommandQueue, Device, Library, MTLClearColor, MTLGPUFamily, MTLLoadAction, MTLPixelFormat,
+    MTLStorageMode, MTLStoreAction, MTLTextureUsage, MetalLayer, RenderPassDescriptor,
+    TextureDescriptor,
 };
 use objc::runtime::YES;
 use shipyard::Unique;
 use uuid::Uuid;
 use winit::platform::macos::WindowExtMacOS;
-
-use super::{model::Model, render_pass::RenderPass};
+use super::render_pass::RenderPass;
 
 #[derive(Unique)]
 pub struct Renderer {
@@ -148,12 +140,8 @@ impl Renderer {
         depth_attachment.set_store_action(MTLStoreAction::DontCare);
         depth_attachment.set_clear_depth(1.0);
 
-        self.forward_render_pass.draw(
-            command_buffer,
-            render_pass_descriptor,
-            renderables,
-            scene,
-        );
+        self.forward_render_pass
+            .draw(command_buffer, render_pass_descriptor, renderables, scene);
 
         // tell CoreAnimation when to present this drawable
         command_buffer.present_drawable(&drawable);
