@@ -1,5 +1,9 @@
 use super::timer::Timer;
-use crate::{rendering::renderer::Renderer, scene::SceneManager, window::DaedalusWindow};
+use crate::{
+    rendering::{renderer::Renderer, shape::cube::Cube},
+    scene::SceneManager,
+    window::DaedalusWindow,
+};
 use glam::Vec3;
 use shipyard::{
     borrow::NonSendSync, Component, EntitiesViewMut, IntoIter, UniqueView, UniqueViewMut, View,
@@ -35,7 +39,22 @@ impl Engine {
 
         world.run_with_data(
             import_mesh,
-            std::path::Path::new("assets/meshes/SciFiHelmet/glTF/SciFiHelmet.gltf"),
+            (
+                std::path::Path::new("assets/meshes/SciFiHelmet/glTF/SciFiHelmet.gltf"),
+                TransformComponent {
+                    scale: Vec3::new(1.0, 1.0, 1.0),
+                    position: Vec3::new(0.0, 2.5, 0.0),
+                    ..Default::default()
+                },
+            ),
+        );
+
+        world.run_with_data(
+            add_cube,
+            TransformComponent {
+                scale: Vec3::new(10.0, 0.5, 10.0),
+                ..Default::default()
+            },
         );
 
         Self {
@@ -74,14 +93,11 @@ pub fn render(
     }
 
     let current_scene = scene_manager.get_current_scene_mut();
-    renderer.tick(
-        renderables,
-        current_scene,
-    );
+    renderer.tick(renderables, current_scene);
 }
 
 pub fn import_mesh(
-    file_path: &Path,
+    (file_path, transform): (&Path, TransformComponent),
     renderer: NonSendSync<UniqueView<Renderer>>,
     mut scene_manager: NonSendSync<UniqueViewMut<SceneManager>>,
     mut meshes: ViewMut<MeshComponent>,
@@ -96,13 +112,30 @@ pub fn import_mesh(
 
     entities.add_entity(
         (&mut meshes, &mut transforms),
-        (
-            MeshComponent { id: mesh_id },
-            TransformComponent {
-                scale: Vec3::new(1.0, 1.0, 1.0),
-                ..Default::default()
-            },
-        ),
+        (MeshComponent { id: mesh_id }, transform),
+    );
+}
+
+pub fn add_cube(
+    transform: TransformComponent,
+    renderer: NonSendSync<UniqueView<Renderer>>,
+    mut scene_manager: NonSendSync<UniqueViewMut<SceneManager>>,
+    mut meshes: ViewMut<MeshComponent>,
+    mut transforms: ViewMut<TransformComponent>,
+    mut entities: EntitiesViewMut,
+) {
+    let cube = Cube::new();
+
+    let mesh_id = scene_manager.get_current_scene_mut().add_shape(
+        &renderer.device,
+        &cube.vertices,
+        &cube.normals,
+        &cube.indices,
+    );
+
+    entities.add_entity(
+        (&mut meshes, &mut transforms),
+        (MeshComponent { id: mesh_id }, transform),
     );
 }
 

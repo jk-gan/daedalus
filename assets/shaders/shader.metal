@@ -93,9 +93,9 @@ fragment float4 fragmentMain(
 
   float3 baseColor = float3(1);
   if (!is_null_texture(baseColorTexture)) {
-      /* baseColor = pow(baseColorTexture.sample( */
-      /*     textureSampler, */
-      /*     in.uv).rgb, 1.0/2.2); */
+      // baseColor = pow(baseColorTexture.sample(
+      //     textureSampler,
+      //     in.uv).rgb, 1.0/2.2);
 
       baseColor = baseColorTexture.sample(
           textureSampler,
@@ -119,7 +119,7 @@ fragment float4 fragmentMain(
 
   // extract metallic and roughness
   float metallic = float(0);
-  float perceptualRoughness = float(0);
+  float perceptualRoughness = float(0.5);
   if (!is_null_texture(metallicRoughnessTexture)) {
     perceptualRoughness = metallicRoughnessTexture.sample(textureSampler, in.uv).g;
     metallic = metallicRoughnessTexture.sample(textureSampler, in.uv).b;

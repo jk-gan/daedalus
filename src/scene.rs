@@ -297,6 +297,77 @@ impl Scene {
             }
         }
     }
+
+    pub fn add_shape(
+        &mut self,
+        device: &Device,
+        vertices: &[f32],
+        // colors: &[f32],
+        normals: &[f32],
+        indices: &[u32],
+    ) -> Uuid {
+        let mut i = 0;
+        // let mut j = 0;
+        let mut vertex_data = Vec::new();
+
+        while i < vertices.len() {
+            vertex_data.push(VertexPosNorTexTanBi {
+                position: [vertices[i], vertices[i + 1], vertices[i + 2]],
+                normal: [normals[i], normals[i + 1], normals[i + 2]],
+                ..Default::default() // color: [colors[j], colors[j + 1], colors[j + 2], colors[j + 3]],
+            });
+            i += 3;
+            // j += 4;
+        }
+
+        let vertex_buffer = device.new_buffer_with_data(
+            vertex_data.as_ptr() as *const _,
+            std::mem::size_of::<VertexPosNorTexTanBi>() as u64
+                * vertex_data.len() as u64,
+            MTLResourceOptions::CPUCacheModeDefaultCache
+                | MTLResourceOptions::StorageModeManaged,
+        );
+
+        let index_buffer = device.new_buffer_with_data(
+            indices.as_ptr() as *const _,
+            std::mem::size_of::<u32>() as u64 * indices.len() as u64,
+            MTLResourceOptions::CPUCacheModeDefaultCache
+                | MTLResourceOptions::StorageModeManaged,
+        );
+
+        // let render_pipeline_state = self.build_render_pipeline();
+        let submesh = Submesh {
+            vertex_buffer,
+            index_count: indices.len() as u64,
+            index_type: MTLIndexType::UInt32,
+            index_buffer,
+            index_buffer_offset: 0,
+            material: Material {
+                base_color_texture: None,
+                normal_texture: None,
+                metallic_roughness_texture: None,
+                ambient_occlusion_texture: None,
+                emissive_texture: None,
+            },
+        };
+
+        let id = Uuid::new_v4();
+
+        // let sampler_state = build_sampler_state(&self.device.raw_device());
+
+        self.models.insert(
+            id.clone(),
+            Model {
+                id: id.clone(),
+                name: "".to_string(),
+                meshes: vec![Arc::new(Mesh {
+                    submeshes: vec![submesh],
+                })],
+            },
+        );
+
+        id
+    }
 }
 
 #[derive(Unique)]
