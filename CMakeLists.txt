@@ -4,4 +4,7 @@ project(daedalus)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(daedalus src/main.cpp)
+find_package(Vulkan REQUIRED)
+
+add_subdirectory(third_party/SDL3)
+add_subdirectory(src)
