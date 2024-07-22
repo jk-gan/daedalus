@@ -5,8 +5,7 @@ int main(int argc, char* argv[]) {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
 
-    int result = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-    if (result < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
         SDL_Log("SDL_Init failed: %s", SDL_GetError());
         return -1;
     }
