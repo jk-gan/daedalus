@@ -4,4 +4,4 @@
   </h1>
 </p>
 
-<p align="center"><strong>Daedalus Game Engine</strong> is my first <strong>toy</strong> 3D game engine for me in C++.</p>
+<p align="center"><strong>Daedalus Game Engine</strong> is my first <strong>toy</strong> 3D game engine in C++.</p>
