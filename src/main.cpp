@@ -1,3 +1,10 @@
+#define NS_PRIVATE_IMPLEMENTATION
+#define MTL_PRIVATE_IMPLEMENTATION
+#define MTK_PRIVATE_IMPLEMENTATION
+#define CA_PRIVATE_IMPLEMENTATION
+
+#include <Metal/Metal.hpp>
+#include <MetalKit/MetalKit.hpp>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
@@ -10,7 +17,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    window = SDL_CreateWindow("Daedalus", 800, 600, SDL_WINDOW_VULKAN);
+    window = SDL_CreateWindow("Daedalus", 800, 600, SDL_WINDOW_METAL);
     if (!window) {
         SDL_Log("SDL_CreateWindow failed: %s", SDL_GetError());
         return -2;
