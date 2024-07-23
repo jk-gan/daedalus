@@ -8,7 +8,15 @@ add_subdirectory(third_party/SDL3)
 #add_subdirectory(third_party/metal-cpp)
 #add_subdirectory(src)
 
-add_executable(daedalus src/main.cpp)
+add_executable(daedalus
+        src/renderer.h
+        src/mtk_view_delegate.h
+        src/app_delegate.h
+        src/app_delegate.cpp
+        src/main.cpp
+        src/mtk_view_delegate.cpp
+        src/renderer.cpp
+)
 
 target_include_directories(daedalus PRIVATE
         SDL3::SDL3

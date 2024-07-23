@@ -1,61 +1,23 @@
+#include <cassert>
+
 #define NS_PRIVATE_IMPLEMENTATION
 #define MTL_PRIVATE_IMPLEMENTATION
 #define MTK_PRIVATE_IMPLEMENTATION
 #define CA_PRIVATE_IMPLEMENTATION
 
-#include <Metal/Metal.hpp>
-#include <MetalKit/MetalKit.hpp>
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
+#include <AppKit/AppKit.hpp>
+#include "app_delegate.h"
 
 int main(int argc, char* argv[]) {
-    SDL_Window* window = nullptr;
-    SDL_Renderer* renderer = nullptr;
+    NS::AutoreleasePool* pAutoreleasePool = NS::AutoreleasePool::alloc()->init();
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
-        SDL_Log("SDL_Init failed: %s", SDL_GetError());
-        return -1;
-    }
+    AppDelegate del;
 
-    window = SDL_CreateWindow("Daedalus", 800, 600, SDL_WINDOW_METAL);
-    if (!window) {
-        SDL_Log("SDL_CreateWindow failed: %s", SDL_GetError());
-        return -2;
-    }
+    NS::Application* pSharedApplication = NS::Application::sharedApplication();
+    pSharedApplication->setDelegate(&del);
+    pSharedApplication->run();
 
-    renderer = SDL_CreateRenderer(window, NULL);
-    if (!renderer) {
-        SDL_Log("SDL_CreateRenderer failed: %s", SDL_GetError());
-        return -3;
-    }
+    pAutoreleasePool->release();
 
-    SDL_Event event;
-    bool quit = false;
-    while (!quit) {
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_EVENT_QUIT:
-                    SDL_Log("SDL Event Quit");
-                    quit = true;
-                    break;
-                case SDL_EVENT_KEY_DOWN:
-                    if (event.key.key == SDLK_ESCAPE) {
-                        SDL_Log("SDL ESC Key Quit");
-                        quit = true;
-                    }
-                    break;
-                default:;
-            }
-        }
-
-        SDL_SetRenderDrawColor(renderer, 133, 193, 220, 255);
-        SDL_RenderClear(renderer);
-        SDL_RenderPresent(renderer);
-        SDL_Delay(1);
-    }
-
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
     return 0;
 }
