@@ -17,8 +17,8 @@ add_executable(daedalus
         src/main.cpp
         src/mtk_view_delegate.cpp
         src/renderer.cpp
-        src/app.cpp
-        src/app.h
+        src/game.cpp
+        src/game.h
 )
 
 target_include_directories(daedalus PRIVATE

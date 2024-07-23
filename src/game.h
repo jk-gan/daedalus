@@ -5,10 +5,10 @@
 #pragma once
 #include <SDL3/SDL_video.h>
 
-class App {
+class Game {
 public:
-    App(uint32_t width, uint32_t height);
-    ~App();
+    Game(uint32_t width, uint32_t height);
+    ~Game();
     auto init() -> void;
     auto run() -> void;
     auto setup() -> void;

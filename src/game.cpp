@@ -2,23 +2,23 @@
 // Created by Jun Kai Gan on 23/07/2024.
 //
 
-#include "app.h"
+#include "game.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <cstdlib>
 #include <spdlog/spdlog.h>
 
-App::App(const uint32_t width, const uint32_t height)
+Game::Game(const uint32_t width, const uint32_t height)
     : width(width)
     , height(height) { }
-App::~App() {
+Game::~Game() {
     if (window != nullptr) {
         SDL_DestroyWindow(window);
     }
 }
 
-auto App::init() -> void {
+auto Game::init() -> void {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
         spdlog::error("SDL could not initialize: {}", SDL_GetError());
         return;
@@ -33,16 +33,19 @@ auto App::init() -> void {
 
     running = true;
 }
-auto App::run() -> void {
+auto Game::run() -> void {
     setup();
     while (running) {
         processInput();
         update();
         render();
+        SDL_Delay(1);
     }
 }
-auto App::setup() -> void { }
-auto App::processInput() -> void {
+auto Game::setup() -> void {
+    // load level
+}
+auto Game::processInput() -> void {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -60,5 +63,5 @@ auto App::processInput() -> void {
         }
     }
 }
-auto App::update() -> void { }
-auto App::render() -> void { }
+auto Game::update() -> void { }
+auto Game::render() -> void { }
