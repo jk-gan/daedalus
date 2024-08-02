@@ -3,7 +3,8 @@
 //
 
 #pragma once
-#include <SDL3/SDL_video.h>
+
+#include "renderer.h"
 
 class Game {
 public:
@@ -12,13 +13,37 @@ public:
     auto init() -> void;
     auto run() -> void;
     auto setup() -> void;
-    auto processInput() -> void;
+    auto process_input() -> void;
     auto update() -> void;
     auto render() -> void;
 
+protected:
+    // SDL_MetalView view;
+
+    // Keyboard and Mouse
+    // std::unique_ptr<class Keyboard> Keyboard;
+    // std::unique_ptr<class Mouse> Mouse;
+
+    // Metal
+    // NS::SharedPtr<CA::MetalDisplayLink> displayLink_;
+    // NS::SharedPtr<CA::MetalLayer> layer;
+    // NS::SharedPtr<MTL::Device> device;
+    // NS::SharedPtr<MTL::CommandQueue> commandQueue;
+    // NS::SharedPtr<MTL::Texture> depthStencilTexture;
+    // NS::SharedPtr<MTL::DepthStencilState> depthStencilState;
+    // NS::SharedPtr<MTL::Library> library;
+    // MTL::PixelFormat frameBufferPixelFormat;
+
+    // Sync primitives
+    // uint32_t frameIndex = 0;
+    // dispatch_semaphore_t frameSemaphore;
+
 private:
+    static constexpr int BUFFER_COUNT = 3;
     bool running = false;
-    SDL_Window* window = nullptr;
+    // SDL_Window* window = nullptr;
     uint32_t width = 800;
     uint32_t height = 600;
+
+    std::unique_ptr<Renderer> renderer = nullptr;
 };

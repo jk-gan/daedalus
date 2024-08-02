@@ -1,13 +1,5 @@
 #include <cassert>
 
-#define NS_PRIVATE_IMPLEMENTATION
-#define MTL_PRIVATE_IMPLEMENTATION
-#define MTK_PRIVATE_IMPLEMENTATION
-#define CA_PRIVATE_IMPLEMENTATION
-
-#include <AppKit/AppKit.hpp>
-
-#include "app_delegate.h"
 #include "game.h"
 
 int main(int argc, char* argv[]) {
@@ -21,7 +13,7 @@ int main(int argc, char* argv[]) {
     //
     // pAutoreleasePool->release();
 
-    Game game(800, 600);
+    Game game(1280, 720);
     game.init();
     game.run();
 

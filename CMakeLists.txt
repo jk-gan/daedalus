@@ -3,6 +3,11 @@ project(daedalus)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+#add_definitions(-DAD_DEFINE_RES_ROOT_DIR-\"${CMAKE_SOURCE_DIR}/Resource\")
 
 add_subdirectory(third_party/SDL3)
 add_subdirectory(third_party/spdlog)
@@ -10,15 +15,15 @@ add_subdirectory(third_party/spdlog)
 #add_subdirectory(src)
 
 add_executable(daedalus
-        src/renderer.h
-        src/mtk_view_delegate.h
-        src/app_delegate.h
-        src/app_delegate.cpp
         src/main.cpp
-        src/mtk_view_delegate.cpp
-        src/renderer.cpp
         src/game.cpp
         src/game.h
+        src/renderer.cpp
+        src/renderer.h
+        src/camera.cpp
+        src/camera.h
+        src/path_tracer.cpp
+        src/path_tracer.h
 )
 
 target_include_directories(daedalus PRIVATE
@@ -27,12 +32,23 @@ target_include_directories(daedalus PRIVATE
         ${PROJECT_SOURCE_DIR}/third_party/metal-cpp
         ${PROJECT_SOURCE_DIR}/third_party/metal-cpp-extensions
 )
-target_link_libraries(daedalus PRIVATE
-        SDL3::SDL3
-        spdlog::spdlog
-        "-framework Metal"
-        "-framework Foundation"
-        "-framework QuartzCore"
-        "-framework MetalKit"
-        "-framework AppKit"
-)
+if (IOS)
+ target_link_libraries(daedalus PRIVATE
+         SDL3::SDL3
+         spdlog::spdlog
+         "-framework Metal"
+         "-framework Foundation"
+         "-framework QuartzCore"
+         "-framework MetalKit"
+ )
+else ()
+ target_link_libraries(daedalus PRIVATE
+         SDL3::SDL3
+         spdlog::spdlog
+         "-framework Metal"
+         "-framework Foundation"
+         "-framework QuartzCore"
+         "-framework MetalKit"
+         "-framework AppKit"
+ )
+endif ()
