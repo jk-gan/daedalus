@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "path_tracer.h"
 #include "renderer.h"
 
 class Game {
@@ -45,5 +46,6 @@ private:
     uint32_t width = 800;
     uint32_t height = 600;
 
-    std::unique_ptr<Renderer> renderer = nullptr;
+    // std::unique_ptr<Renderer> renderer = nullptr;
+    std::unique_ptr<PathTracer> path_tracer = nullptr;
 };

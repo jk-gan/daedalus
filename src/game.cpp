@@ -32,10 +32,15 @@ auto Game::init() -> void {
         return;
     }
 
-    renderer = std::make_unique<Renderer>(window);
-    if (!renderer->initialize()) {
+    path_tracer = std::make_unique<PathTracer>(window);
+    if (!path_tracer->init()) {
         spdlog::error("Failed to initialize renderer");
     }
+
+    // renderer = std::make_unique<Renderer>(window);
+    // if (!renderer->initialize()) {
+    //     spdlog::error("Failed to initialize renderer");
+    // }
 
     // device = NS::TransferPtr(MTL::CreateSystemDefaultDevice());
     // layer = NS::TransferPtr(static_cast<CA::MetalLayer*>((SDL_Metal_GetLayer(view))));
@@ -82,4 +87,4 @@ auto Game::process_input() -> void {
     }
 }
 auto Game::update() -> void { }
-auto Game::render() -> void { renderer->render(); }
+auto Game::render() -> void { path_tracer->render(); }
