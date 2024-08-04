@@ -97,5 +97,5 @@ auto Game::process_input() -> void {
         path_tracer->process_input(event, delta_time);
     }
 }
-auto Game::update() -> void { }
+auto Game::update() -> void { path_tracer->update(delta_time); }
 auto Game::render() -> void { path_tracer->render(); }

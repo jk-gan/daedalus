@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "camera.h"
+#include "first_person_camera.h"
 #include "shader_types.h"
 
 #include <Metal/Metal.hpp>
@@ -20,6 +20,7 @@ public:
 
     auto init() -> bool;
     auto process_input(const SDL_Event& event, float delta_time) -> void;
+    auto update(float delta_time) -> void;
     auto render() -> void;
 
     auto reset_samples() -> void;
@@ -44,7 +45,9 @@ private:
     Shader_Uniforms uniforms { 0, 0 };
 
     glm::vec3 look_from { 0.0, 0.0, 0.0 };
-    std::unique_ptr<Camera> camera;
+
+    std::unique_ptr<FirstPersonCamera> first_person_camera;
+    std::unique_ptr<CameraController> camera_controller;
 
     auto create_metal_layer() -> void;
     auto create_render_pipeline() -> void;

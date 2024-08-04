@@ -53,7 +53,9 @@ auto PathTracer::init() -> bool {
         return false;
     }
 
-    camera = Camera::look_at(glm::vec3(0.0, 0.75, 1.0), glm::vec3(0.0, -0.5, -1.0), glm::vec3(0.0, 1.0, 0.0));
+    first_person_camera = std::make_unique<FirstPersonCamera>(
+        glm::vec3 { 0.0f, 0.0f, 3.0f }, 90.0f, 0.0f, 45.0f, 800.0f / 600.0f, 100.0f, 0.1f);
+    camera_controller = std::make_unique<CameraController>(5.0f, 5.0f);
 
     create_metal_layer();
     create_render_pipeline();
@@ -122,54 +124,31 @@ auto PathTracer::create_vertex_buffer() -> void {
 }
 
 auto PathTracer::create_uniform_buffer() -> void {
-    uniforms = Shader_Uniforms { .width = width, .height = height, .frame_count = 0, .camera = camera->get_uniforms() };
+    uniforms = Shader_Uniforms {
+        .width = width, .height = height, .frame_count = 0, .camera = first_person_camera->get_uniforms()
+    };
     uniform_buffer = device->newBuffer(&uniforms, sizeof(uniforms), MTL::ResourceStorageModeShared);
 }
 
 auto PathTracer::process_input(const SDL_Event& event, const float delta_time) -> void {
-    auto speed = 5.0f * delta_time;
-
     switch (event.type) {
         case SDL_EVENT_KEY_DOWN:
-            switch (event.key.key) {
-                case SDLK_W:
-                    camera->move_forward(speed);
-                    reset_samples();
-                    break;
-                case SDLK_S:
-                    camera->move_forward(-speed);
-                    reset_samples();
-                    break;
-                case SDLK_A:
-                    camera->move_right(-speed);
-                    reset_samples();
-                    break;
-                case SDLK_D:
-                    camera->move_right(speed);
-                    reset_samples();
-                    break;
-                case SDLK_SPACE:
-                    camera->move_up(speed);
-                    reset_samples();
-                    break;
-                case SDLK_LCTRL:
-                    camera->move_up(-speed);
-                    reset_samples();
-                    break;
-                default:;
-            }
+            spdlog::info("Key down: {}", event.key.key);
+            camera_controller->handle_keyboard_event(event.key.key, SDL_EVENT_KEY_DOWN);
+            reset_samples();
+            break;
+        case SDL_EVENT_KEY_UP:
+            spdlog::info("Key up: {}", event.key.key);
+            camera_controller->handle_keyboard_event(event.key.key, SDL_EVENT_KEY_UP);
             break;
         case SDL_EVENT_MOUSE_MOTION:
             if (event.motion.state & SDL_BUTTON_RMASK) {
-                float sensitivity = 0.001f;
-                camera->rotate_horizontal(-event.motion.xrel * sensitivity);
-                camera->rotate_vertical(-event.motion.yrel * sensitivity);
+                camera_controller->handle_mouse_event(-event.motion.xrel, -event.motion.yrel);
                 reset_samples();
             }
             break;
         case SDL_EVENT_MOUSE_WHEEL: {
-            float zoom_factor = event.wheel.y * 0.01f;
-            camera->zoom(zoom_factor);
+            camera_controller->handle_scroll_event(event.wheel.y);
             reset_samples();
             break;
         }
@@ -177,12 +156,15 @@ auto PathTracer::process_input(const SDL_Event& event, const float delta_time) -
     }
 }
 
+auto PathTracer::update(const float delta_time) -> void { camera_controller->update(*first_person_camera, delta_time); }
+
 auto PathTracer::render() -> void {
     NS::AutoreleasePool* autorelease_pool = NS::AutoreleasePool::alloc()->init();
 
     // Update
     uniforms.frame_count++;
-    uniforms.camera = camera->get_uniforms();
+    // uniforms.camera = camera->get_uniforms();
+    uniforms.camera = first_person_camera->get_uniforms();
 
     // Update uniform buffer
     memcpy(uniform_buffer->contents(), &uniforms, sizeof(Shader_Uniforms));
@@ -223,10 +205,7 @@ auto PathTracer::render() -> void {
     autorelease_pool->release();
 }
 
-auto PathTracer::reset_samples() -> void {
-    uniforms.frame_count = 0;
-    spdlog::info("Reset samples");
-}
+auto PathTracer::reset_samples() -> void { uniforms.frame_count = 0; }
 
 auto create_sample_textures(NS::SharedPtr<MTL::Device> device, uint32_t width, uint32_t height)
     -> std::array<MTL::Texture*, 2> {
