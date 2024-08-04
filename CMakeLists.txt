@@ -11,24 +11,42 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(third_party/SDL3)
 add_subdirectory(third_party/spdlog)
-#add_subdirectory(third_party/metal-cpp)
-#add_subdirectory(src)
+add_subdirectory(third_party/glm)
 
-add_executable(daedalus
-        src/main.cpp
-        src/game.cpp
-        src/game.h
-        src/renderer.cpp
-        src/renderer.h
-        src/camera.cpp
-        src/camera.h
-        src/path_tracer.cpp
-        src/path_tracer.h
-)
+# Add source files
+file(GLOB_RECURSE PROJECT_HEADERS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.h)
+file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.cpp)
+
+# Add shader files
+set(METAL_SHADER_DIR ${CMAKE_SOURCE_DIR}/assets/shaders)
+set(COMPILED_SHADER_DIR ${CMAKE_BINARY_DIR}/compiled_shaders)
+set(COMPILED_SHADER_DIR ${CMAKE_BINARY_DIR}/assets/shaders/compiled)
+
+file(GLOB_RECURSE SHADERS CONFIGURE_DEPENDS ${METAL_SHADER_DIR}/*.metal)
+
+# Compile shaders
+foreach (SHADER ${SHADERS})
+ get_filename_component(SHADER_NAME ${SHADER} NAME_WE)
+ set(COMPILED_SHADER ${COMPILED_SHADER_DIR}/${SHADER_NAME}.metallib)
+
+ add_custom_command(
+         OUTPUT ${COMPILED_SHADER}
+         COMMAND xcrun -sdk macosx metal -c ${SHADER} -o ${COMPILED_SHADER_DIR}/${SHADER_NAME}.air
+         COMMAND xcrun -sdk macosx metallib ${COMPILED_SHADER_DIR}/${SHADER_NAME}.air -o ${COMPILED_SHADER}
+         DEPENDS ${SHADER}
+         COMMENT "Compiling Metal shader ${SHADER_NAME}"
+ )
+
+ list(APPEND COMPILED_SHADERS ${COMPILED_SHADER})
+endforeach ()
+
+add_executable(daedalus ${PROJECT_HEADERS} ${PROJECT_SOURCES} ${COMPILED_SHADERS}
+        assets/shaders/definitions.h)
 
 target_include_directories(daedalus PRIVATE
         SDL3::SDL3
         spdlog::spdlog
+        glm::glm
         ${PROJECT_SOURCE_DIR}/third_party/metal-cpp
         ${PROJECT_SOURCE_DIR}/third_party/metal-cpp-extensions
 )
@@ -36,6 +54,7 @@ if (IOS)
  target_link_libraries(daedalus PRIVATE
          SDL3::SDL3
          spdlog::spdlog
+         glm::glm
          "-framework Metal"
          "-framework Foundation"
          "-framework QuartzCore"
@@ -45,6 +64,7 @@ else ()
  target_link_libraries(daedalus PRIVATE
          SDL3::SDL3
          spdlog::spdlog
+         glm::glm
          "-framework Metal"
          "-framework Foundation"
          "-framework QuartzCore"

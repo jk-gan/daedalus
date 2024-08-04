@@ -5,7 +5,6 @@
 #pragma once
 
 #include "path_tracer.h"
-#include "renderer.h"
 
 class Game {
 public:
@@ -42,10 +41,13 @@ protected:
 private:
     static constexpr int BUFFER_COUNT = 3;
     bool running = false;
-    // SDL_Window* window = nullptr;
+
     uint32_t width = 800;
     uint32_t height = 600;
 
-    // std::unique_ptr<Renderer> renderer = nullptr;
+    uint64_t last_frame_time = 0;
+    uint64_t current_frame_time = 0;
+    float delta_time = 0.0;
+
     std::unique_ptr<PathTracer> path_tracer = nullptr;
 };

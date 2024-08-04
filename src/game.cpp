@@ -19,12 +19,16 @@ auto Game::init() -> void {
         return;
     }
 
-    constexpr int window_flags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_METAL;
+    // constexpr int window_flags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_METAL;
+    constexpr int window_flags = SDL_WINDOW_METAL;
     const auto window = SDL_CreateWindow("Daedalus", static_cast<int>(width), static_cast<int>(height), window_flags);
     if (!window) {
         spdlog::error("Error creating SDL window: {}", SDL_GetError());
         return;
     }
+
+    spdlog::info("Window: pixel density: {}, display scale: {}", SDL_GetWindowPixelDensity(window),
+        SDL_GetWindowDisplayScale(window));
 
     running = true;
     if (SDL_ShowWindow(window) < 0) {
@@ -32,7 +36,7 @@ auto Game::init() -> void {
         return;
     }
 
-    path_tracer = std::make_unique<PathTracer>(window);
+    path_tracer = std::make_unique<PathTracer>(window, width, height);
     if (!path_tracer->init()) {
         spdlog::error("Failed to initialize renderer");
     }
@@ -59,6 +63,11 @@ auto Game::init() -> void {
 auto Game::run() -> void {
     setup();
     while (running) {
+        current_frame_time = SDL_GetPerformanceCounter();
+        delta_time = static_cast<double>(current_frame_time - last_frame_time)
+                     / static_cast<double>(SDL_GetPerformanceFrequency());
+        last_frame_time = current_frame_time;
+
         process_input();
         update();
         render();
@@ -84,6 +93,8 @@ auto Game::process_input() -> void {
                 break;
             default:;
         }
+        // TODO: should this run first or last?
+        path_tracer->process_input(event, delta_time);
     }
 }
 auto Game::update() -> void { }
